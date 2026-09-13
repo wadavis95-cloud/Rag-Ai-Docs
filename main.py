@@ -1,69 +1,72 @@
-# Import tools for working with paths and reading JSON records.
 from pathlib import Path
 import json
+from sentence_transformers import SentenceTransformer
 
 
-# Find the folder containing this script and locate our raw data.
+# Locate the original document collection.
 project_dir = Path(__file__).resolve().parent
-raw_dir = project_dir / "data" / "raw"
+collection_dir = (
+    project_dir / "data" / "raw" / "AI_Technical_Documentation"
+)
 
 
-# Point to the extracted collection and list its immediate contents.
-collection_dir = raw_dir / "AI_Technical_Documentation"
-
-for item in collection_dir.iterdir():
-    print(item.name)
-
-
-# Read the first manifest record and convert it into a dictionary.
-# Each line in this JSONL file describes one document.
+# Load the document inventory from the JSONL manifest.
 manifest_path = collection_dir / "manifest.jsonl"
+documents = []
 
 with manifest_path.open("r", encoding="utf-8") as file:
-    first_document = json.loads(file.readline())
+    for line in file:
+        if line.strip():
+            documents.append(json.loads(line))
 
 
-# Inspect the document's identity, source, and recorded quality flags.
-# An empty flags list does not guarantee that the document is clean.
-print("Title:", first_document["title"])
-print("Project:", first_document["project"])
-print("Source:", first_document["source_url"])
-print("Quality flags:", first_document["quality_flags"])
+# Attach each document's text to its metadata.
+for document in documents:
+    document_path = collection_dir / document["local_path"]
+    document["text"] = document_path.read_text(encoding="utf-8")
 
 
-# Use the path from the manifest to open the original document.
-# Reading the file leaves its contents unchanged.
-document_path = collection_dir / first_document["local_path"]
+# Confirm how many documents were loaded.
+print(f"Loaded {len(documents)} documents.")
 
-with document_path.open("r", encoding="utf-8") as file:
-    document_text = file.read()
+# Split documents into overlapping passages and retain their sources.
+chunks = []
+chunk_size = 150
+overlap = 30
 
+for document in documents:
+    words = document["text"].split()
 
-# Preview the first 1,500 characters so we can inspect the formatting
-# without printing the entire document in the terminal.
-print(document_text[:1500])
+    for start in range(0, len(words), chunk_size - overlap):
+        chunk_words = words[start:start + chunk_size]
 
-#Find the first embedded reStructuredText block in the Documen
-marker = "```{eval-rst}"
-start = document_text.find(marker)
+        chunks.append({
+            "text": " ".join(chunk_words),
+            "title": document["title"],
+            "source_url": document["source_url"],
+            "document_id": document["document_id"],
+        })
 
-#Preview the block only if the marker exists. 
-#find() returns -1 when it cannot find the requested text.
-if start != -1:
-    print(document_text[start:start + 1200])
-else:
-    print("No eval-rst block found.")
+        if start + chunk_size >= len(words):
+            break
 
-# Preview the first converted label alongside its original surrounding lines.
-lines = document_text.splitlines()
+print(f"Created {len(chunks)} chunks.")
+print("First chunk:", chunks[0]["text"])
 
-for index, line in enumerate(lines):
-    stripped_line = line.strip()
+# Load BGE Small on CPU and embed three passages as a first check.
+embedding_model = SentenceTransformer(
+    "BAAI/bge-small-en-v1.5",
+    device="cpu",
+)
 
-    if stripped_line.startswith(".. tab::"):
-        label = stripped_line.removeprefix(".. tab::").strip()
+sample_texts = [chunk["text"] for chunk in chunks[:3]]
 
-        print("### " + label)
-        print("\n".join(lines[index + 1:index + 6]))
-        break
+sample_embeddings = embedding_model.encode(
+    sample_texts,
+    normalize_embeddings=True,
+)
 
+print("Embedding shape:", sample_embeddings.shape)
+
+# Inspect the first ten values in the first passage's embedding.
+print("First embedding values:", sample_embeddings[0][:10])
