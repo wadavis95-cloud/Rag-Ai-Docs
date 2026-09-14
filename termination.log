@@ -1,0 +1,18 @@
+25611 +++ exited with 0 +++
+25747 +++ exited with 0 +++
+25746 +++ exited with 0 +++
+25556 --- SIGTERM {si_signo=SIGTERM, si_code=SI_USER, si_pid=0, si_uid=61876} ---
+26750 +++ killed by SIGTERM +++
+26748 +++ killed by SIGTERM +++
+26747 +++ killed by SIGTERM +++
+26749 +++ killed by SIGTERM +++
+25788 +++ killed by SIGTERM +++
+25787 +++ killed by SIGTERM +++
+25786 +++ killed by SIGTERM +++
+25610 +++ killed by SIGTERM +++
+25789 +++ killed by SIGTERM +++
+25749 +++ killed by SIGTERM +++
+25745 +++ killed by SIGTERM +++
+25680 +++ killed by SIGTERM +++
+25556 +++ killed by SIGTERM +++
+25748 +++ exited with 1 +++
