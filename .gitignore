@@ -216,3 +216,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Extracted corpus and local cleaning experiments; source ZIP is in docs/.
+/data/

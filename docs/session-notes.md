@@ -1,5 +1,7 @@
 # First document inspection session
 
+Historical notes from the initial session. See the [build journal](build-journal.md) for the completed end-to-end milestone and later experiments.
+
 Completed:
 - Uploaded and extracted the 150-document sample.
 - Read the first manifest record and its source document.

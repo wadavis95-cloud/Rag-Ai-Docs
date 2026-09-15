@@ -1,0 +1,6 @@
+# Direct dependencies captured from the local environment on 2026-09-14.
+# Python 3.14.7 on Windows; this is not a complete transitive lockfile.
+torch==2.14.0
+transformers==5.17.0
+sentence-transformers==6.0.1
+numpy==2.5.1
